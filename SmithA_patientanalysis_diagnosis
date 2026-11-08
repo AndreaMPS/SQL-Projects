@@ -1,0 +1,100 @@
+# Andrea Smith | MIMIC-IV Hospital Stay Data - Relational Database Analysis | 6160
+
+/* 7.0 MySQL: Identify Patients with Sepsis-3 and Diagnosed with Sepsis at Discharge */
+WITH sepsis_patients AS (
+    SELECT
+        p.subject_id,
+        p.hadm_id,
+        p.stay_id,
+        d.icd_code,
+        d.icd_version
+    FROM
+        icustays p
+    INNER JOIN diagnoses_icd d ON p.hadm_id = d.hadm_id
+    WHERE
+        d.icd_code IN ('A419', 'R6521', 'R6520') /* Example ICD codes for Sepsis, replace as needed */
+        AND d.icd_version = 10 /* Assuming ICD-10 codes, change as needed  */
+),
+sofa_scores AS (
+    SELECT
+        p.subject_id,
+        p.hadm_id,
+        p.stay_id,
+        MIN(s.charttime) AS sepsis_onset_time
+    FROM
+        chartevents s
+    INNER JOIN sepsis_patients p ON s.subject_id = p.subject_id AND s.hadm_id = p.hadm_id
+    WHERE
+        s.itemid IN (220739, 223900, 220045) /* Example SOFA-related item IDs */
+        AND s.value IS NOT NULL
+        AND s.value > 2 /* Example threshold for SOFA */
+    GROUP BY
+        p.subject_id, p.hadm_id, p.stay_id
+)
+SELECT
+    DISTINCT p.subject_id,
+    p.hadm_id,
+    p.stay_id,
+    r.text AS radiology_report
+FROM
+    sofa_scores p
+INNER JOIN radiology_reports r ON p.subject_id = r.subject_id
+ORDER BY RAND()
+LIMIT 10;
+
+
+Upload Data to Snowflake
+Export the Results: Save the query results into a CSV file.
+Load Data into Snowflake: Use the Snowflake PUT and COPY INTO commands to upload the data. 
+
+# ********************************************************************************
+/* 7.2 Snowflake: Create a table in Snowflake */
+CREATE OR REPLACE TABLE sepsis_patients_radiology (
+    subject_id INT,
+    hadm_id INT,
+    stay_id INT,
+    radiology_report TEXT
+);
+
+-- Load the data into Snowflake
+PUT file://path/to/exported.csv @mystage;
+COPY INTO sepsis_patients_radiology
+FROM @mystage/exported.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"');
+
+# Integrate LLM with Snowflake: Set up an LLM-enabled SQL tool like Snowflake's Snowpark with Python to summarize similarities.
+# Python Code for LLM Processing:
+from snowflake.snowpark.session import Session
+from openai import ChatCompletion
+
+# Snowflake connection
+session = Session.builder.configs({
+    "account": "your_account",
+    "user": "your_user",
+    "password": "your_password",
+    "database": "your_database",
+    "schema": "your_schema"
+}).create()
+
+# Query the data
+df = session.sql("SELECT radiology_report FROM sepsis_patients_radiology").to_pandas()
+
+# Use OpenAI API to summarize
+openai.api_key = "your_openai_api_key"
+responses = []
+for report in df['radiology_report']:
+    response = ChatCompletion.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "Summarize the similarities between radiology reports."},
+            {"role": "user", "content": report}
+        ]
+    )
+    responses.append(response['choices'][0]['message']['content'])
+
+# Print summarized similarities
+for idx, summary in enumerate(responses):
+    print(f"Report {idx + 1} Summary: {summary}")
+
+
+
