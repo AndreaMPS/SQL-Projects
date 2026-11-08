@@ -133,12 +133,12 @@ ORDER BY RAND()
 LIMIT 10;
 
 
-# Upload Data to Snowflake
+# Next Part = Upload Data to Snowflake
 # Export the Results: Save the query results into a CSV file.
 # Load Data into Snowflake: Use the Snowflake PUT and COPY INTO commands to upload 
 
 # **************************
-/* 7.2 Snowflake: Create a table in Snowflake */
+/* 7.2 Snowflake: Creating a table in Snowflake */
 CREATE OR REPLACE TABLE sepsis_patients_radiology (
     subject_id INT,
     hadm_id INT,
@@ -146,13 +146,13 @@ CREATE OR REPLACE TABLE sepsis_patients_radiology (
     radiology_report TEXT
 );
 
--- Load the data into Snowflake
+-- Loading the data into Snowflake
 PUT file://path/to/exported.csv @mystage;
 COPY INTO sepsis_patients_radiology
 FROM @mystage/exported.csv
 FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"');
 
-# Integrate LLM with Snowflake: Set up an LLM-enabled SQL tool like Snowflake's Snowpark with Python to summarize similarities.
+# Integrate LLM with Snowflake: Set up LLM-enabled Snowpark with Python to summarize similarities.
 # Python Code for LLM Processing:
 from snowflake.snowpark.session import Session
 from openai import ChatCompletion
