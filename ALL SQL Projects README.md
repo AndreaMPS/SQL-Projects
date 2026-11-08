@@ -9,4 +9,6 @@ in SQL Workbench and Snowflake**
 
 *Data Source: Johnson, A., Bulgarelli, L., Pollard, T., Gow, B., Moody, B., Horng, S., Celi, L. A., & Mark, R. (2024). MIMIC-IV (version 3.1). PhysioNet. RRID:SCR_007345. https://doi.org/10.13026/kpb9-mt58*
 
+*Reference & Codebook: Massachusetts Institute of Technology. (2023). MIMIC Data. MIT 
+Laboratory for Computational Physiology. https://mimic.mit.edu/docs/iv/*
 
