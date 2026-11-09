@@ -15,7 +15,7 @@ Laboratory for Computational Physiology. https://mimic.mit.edu/docs/iv/*
 # Associated Files - How to Run
 1. Determine if you want to work in parts or combined scripts [SmithA_hospitalanalysis_Combine.sql]
 2. Download appropriate files into one area
-3. Download and import dataset from the MIMIC-IV link as the direct dataset is not in this repository
+3. Download and import dataset (will be added shortly)
 4. Open and run the combined file or [SmithA_hospitalanalysis_tables.sql] first
 5. If working in parts open and run [SmithA_hospitalanalysis_diagnosis] next
    
